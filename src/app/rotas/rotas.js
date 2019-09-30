@@ -1,87 +1,30 @@
-const { check, validationResult } = require('express-validator/check');
+const { check } = require('express-validator/check');
 
-const LivroDao = require('../infra/livro-dao');
-const db = require('../../config/database');
+const LivroControlador = require("../controlador/livro-controlador");
+const livroControlador = new LivroControlador();
+
+const BaseControlador = require("../controlador/base-controlador");
+const baseControlador = new BaseControlador();
+
+const Livro = require("../modelo/livro");
 
 module.exports = (app) => {
 
-    app.get('/', function(req, resp) {
-        resp.marko(
-            require('../views/base/home/home.marko')
-        );
-    });
-    
-    app.get('/livros', function(req, resp) {
-        const livroDao = new LivroDao(db);
-        livroDao.lista()
-                .then(livros => resp.marko(
-                    require('../views/livros/lista/lista.marko'),
-                    {
-                        livros: livros
-                    }
-                ))
-                .catch(erro => console.log(erro));
-    });
-    
-    app.get('/livros/form', function(req, resp) {
-        resp.marko(require('../views/livros/form/form.marko'), { livro: {} });
-    });
-    
-    app.get('/livros/form/:id', function(req, resp) {
-        const id = req.params.id;
-        const livroDao = new LivroDao(db);
+    const rotasBase = BaseControlador.rotas();
+    const rotasLivro = LivroControlador.rotas();
 
-        livroDao.buscaPorId(id)
-                .then(livro => 
-                    resp.marko(
-                        require('../views/livros/form/form.marko'), 
-                        { livro: livro }
-                    )
-                )
-                .catch(erro => console.log(erro));
-    });
+    app.get(rotasBase.home, baseControlador.home());
     
-    app.post('/livros',[
-        check('titulo').isLength({ min: 5 }).withMessage("O Campo Titulo deve ter no mínimo 5 caracteres") ,
-        check("preco").isCurrency().withMessage("O Preço deve ser um valor monetário válido")
-    ], function(req, resp) {
-
-        const errors = validationResult(req);
-        if(!errors.isEmpty()){
-            console.log("Validation error");
-            return resp.marko(
-                require("../views/livros/form/form.marko"),
-                { 
-                    livro : {},
-                    erroValidacao : errors.array()
-                }
-            )
-        }
-
-        console.log(req.body);
-        const livroDao = new LivroDao(db);
-        
-        livroDao.adiciona(req.body)
-                .then(resp.redirect('/livros'))
-                .catch(erro => console.log(erro));
-    });
+    app.get(rotasLivro.lista, livroControlador.lista());
     
-    app.put('/livros', function(req, resp) {
-        console.log(req.body);
-        const livroDao = new LivroDao(db);
-        
-        livroDao.atualiza(req.body)
-                .then(resp.redirect('/livros'))
-                .catch(erro => console.log(erro));
-    });
+    app.get(rotasLivro.cadastro, livroControlador.formularioCadastro());
     
-    app.delete('/livros/:id', function(req, resp) {
-        const id = req.params.id;
-
-        const livroDao = new LivroDao(db);
-        livroDao.remove(id)
-                .then(() => resp.status(200).end())
-                .catch(erro => console.log(erro));
-    });
+    app.get(rotasLivro.edicao, livroControlador.formularioEdicao());
+    
+    app.post(rotasLivro.lista,[ Livro.validacoes ], livroControlador.cadastra());
+    
+    app.put(rotasLivro.lista, livroControlador.edita());
+    
+    app.delete(rotasLivro.delecao, livroControlador.remove());
 
 };
