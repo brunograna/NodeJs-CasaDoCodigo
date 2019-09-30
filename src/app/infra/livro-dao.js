@@ -44,7 +44,6 @@ class LivroDao {
     }
 
     buscaPorId(id) {
-
         return new Promise((resolve, reject) => {
             this._db.get(
                 `
@@ -89,7 +88,6 @@ class LivroDao {
     }
 
     remove(id) {
-
         return new Promise((resolve, reject) => {
             this._db.get(
                 `
@@ -107,6 +105,7 @@ class LivroDao {
             );
         });
     }
+    
 }
 
 module.exports = LivroDao;
