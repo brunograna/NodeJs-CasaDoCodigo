@@ -53,8 +53,7 @@ class LivroControlador {
     }
 
     cadastra(){
-        return function(req, resp) {
-
+        return function(req, resp) {            
             const errors = validationResult(req);
             if(!errors.isEmpty()){
                 console.log("Validation error");

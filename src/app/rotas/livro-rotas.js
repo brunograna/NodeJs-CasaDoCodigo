@@ -1,3 +1,4 @@
+const { check } = require('express-validator/check');
 
 const LivroControlador = require("../controlador/livro-controlador");
 const livroControlador = new LivroControlador();
@@ -14,8 +15,8 @@ module.exports = (app) => {
     
     app.route(rotasLivro.cadastro)
         .get(livroControlador.formularioCadastro())
-        .post(Livro.validacoes, livroControlador.cadastra())
-        .put(livroControlador.edita());
+        .post(Livro.validacoes(), livroControlador.cadastra())
+        .put(Livro.validacoes(), livroControlador.edita());
     
     app.delete(rotasLivro.delecao, livroControlador.remove());
 
